@@ -1236,13 +1236,13 @@ LOAD C:/ST/STM32CubeIDE_1.14.0/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.ext
  .debug_macro   0x000000000000f85f      0x23c ./Src/sysmem.o
  .debug_macro   0x000000000000fa9b      0x114 ./Src/uart.o
 
-.debug_line     0x0000000000000000     0x2586
- .debug_line    0x0000000000000000      0x6fb ./Src/main.o
- .debug_line    0x00000000000006fb      0x973 ./Src/pwm.o
- .debug_line    0x000000000000106e      0x8ad ./Src/syscalls.o
- .debug_line    0x000000000000191b      0x57e ./Src/sysmem.o
- .debug_line    0x0000000000001e99      0x672 ./Src/uart.o
- .debug_line    0x000000000000250b       0x7b ./Startup/startup_stm32f401retx.o
+.debug_line     0x0000000000000000     0x256e
+ .debug_line    0x0000000000000000      0x6f3 ./Src/main.o
+ .debug_line    0x00000000000006f3      0x96b ./Src/pwm.o
+ .debug_line    0x000000000000105e      0x8ad ./Src/syscalls.o
+ .debug_line    0x000000000000190b      0x57e ./Src/sysmem.o
+ .debug_line    0x0000000000001e89      0x66a ./Src/uart.o
+ .debug_line    0x00000000000024f3       0x7b ./Startup/startup_stm32f401retx.o
 
 .debug_str      0x0000000000000000    0x54f95
  .debug_str     0x0000000000000000    0x52931 ./Src/main.o
