@@ -1,0 +1,15 @@
+../Src/pwm.c:49:6:Delay	2
+../Src/pwm.c:55:6:tim2_pa5_pwm	1
+../Src/pwm.c:95:6:Tim2_Ch1_Init	1
+../Src/pwm.c:137:6:Tim2_Ch2_Init	1
+../Src/pwm.c:183:6:pwm_set_frequency	1
+../Src/pwm.c:189:6:pwm_set_dutycycle	3
+../Src/pwm.c:203:13:MotorPin_Init	1
+../Src/pwm.c:237:6:Encoder_A_Init	1
+../Src/pwm.c:313:6:Motor_A_Forward	1
+../Src/pwm.c:321:6:Motor_A_Reverse	1
+../Src/pwm.c:330:6:Motor_A_Brake	1
+../Src/pwm.c:338:6:Motor_A_Off	1
+../Src/pwm.c:343:6:Motor_A_Status	5
+../Src/pwm.c:366:6:Motor_B_Forward	1
+../Src/pwm.c:378:6:Motor_B_Status	5
