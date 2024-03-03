@@ -7,13 +7,13 @@ int main(void)
 {
 	uart2_rxtx_init();
 	Tim2_Ch1_Init();
-	Tim2_Ch2_Init();
-	Encoder_A_Init();
+//	Tim2_Ch2_Init();
+//	Encoder_A_Init();
 
 	while(1)
 	{
-		Motor_A_Forward(75);
-		counter = TIM4->CNT;
+		Motor_A_Forward(25);
+//		counter = TIM4->CNT;
 //		Motor_B_Forward(75);
 //		Delay(5000);
 //

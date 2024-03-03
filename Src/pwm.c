@@ -68,15 +68,14 @@ void tim2_pa5_pwm(void)
 	GPIOA->AFR[0] &= ~(1U<<23);
 
 
-
 	/*Enable clock access to tim2*/
 	RCC->APB1ENR |= TIM2EN;
 	/*Set prescaler value*/
-	TIM2->PSC = 1600 - 1; // 16 000 000 / 8 = 2 000 000Hz
+	TIM2->PSC = 16000 - 1; // 16 000 000 / 16 000 = 1 000Hz
 	/*Set auto-reload value
 	 * This sets the motor frequency to 20kHz, which is a frequency at the edge of the
 	 * human hearing spectrum*/
-	TIM2->ARR = 100 - 1; // 2 000 000 / 100 =  20kHz
+	TIM2->ARR = 20 - 1; // 1000Hz / 20 =  50Hz
 
 	/*Set output compare toggle mode*/
 	TIM2->CCMR1 |= OC1_PWM_MODE1;
@@ -335,11 +334,6 @@ void Motor_A_Brake(void)
 	Motor_A_Status();
 }
 
-void Motor_A_Off(void)
-{
-//	pwm_set_dutycycle(OFF, CHANNEL1);
-}
-
 void Motor_A_Status(void)
 {
 	if (!(GPIOA->ODR & (1U<<5)))
@@ -366,15 +360,28 @@ void Motor_A_Status(void)
 void Motor_B_Forward(uint32_t speed)
 {
 	MotorPin_Init();
-	GPIOA->ODR |= (1U<<6);
-	GPIOA->ODR &= ~(1U<<7);
+	GPIOA->ODR |= IN3;
+	GPIOA->ODR &= ~IN4;
 	pwm_set_dutycycle(speed, CHANNEL2);
 	Motor_B_Status();
 }
 
-void Motor_B_Reverse(uint32_t speed);
-void Motor_B_Brake(void); // Make soft break
-void Motor_B_Off(void); // Stop power to motor B
+void Motor_B_Reverse(uint32_t speed)
+{
+	MotorPin_Init();
+	GPIOA->ODR &= ~IN3;
+	GPIOA->ODR |= IN4;
+	pwm_set_dutycycle(speed, CHANNEL2);
+//	Motor_B_Status();
+}
+void Motor_B_Brake(void)
+{
+	MotorPin_Init();
+	GPIOA->ODR &= ~IN3;
+	GPIOA->ODR &= ~IN4;
+	Motor_B_Status();
+}
+
 void Motor_B_Status(void)
 {
 	if (!(GPIOA->ODR & (1U<<6)))

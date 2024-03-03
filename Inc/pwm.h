@@ -18,13 +18,11 @@ void Encoder_A_Init(void); //Initializing encoder on Motor A
 void Motor_A_Forward(uint32_t speed);
 void Motor_A_Reverse(uint32_t speed);
 void Motor_A_Brake(void); // This is a soft break from the motor controller
-void Motor_A_Off(void); // Stop power to motor A
 void Motor_A_Status(void);
 
 void Motor_B_Forward(uint32_t speed);
 void Motor_B_Reverse(uint32_t speed);
 void Motor_B_Brake(void); // Make soft break
-void Motor_B_Off(void); // Stop power to motor B
 void Motor_B_Status(void);
 
 
