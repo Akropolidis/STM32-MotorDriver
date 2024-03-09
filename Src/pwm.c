@@ -30,8 +30,8 @@
 #define DUTY_CYCLE		40
 #define OFF				0
 
-#define CHANNEL1		1
-#define CHANNEL2		2
+#define TIMER2			2
+#define TIMER4			4
 
 #define IN1				(1U<<5)
 #define IN2				(1U<<4)
@@ -40,8 +40,8 @@
 
 
 
-void pwm_set_frequency(uint32_t Freq);
-void pwm_set_dutycycle(uint32_t DutyCycle, uint32_t channel);
+void pwm_set_frequency(uint32_t Freq, uint32_t timer);
+void pwm_set_dutycycle(uint32_t DutyCycle, uint32_t timer);
 void Motor_A_Status(void);
 void Motor_B_Status(void);
 
@@ -71,16 +71,16 @@ void tim2_pa5_pwm(void)
 	/*Enable clock access to tim2*/
 	RCC->APB1ENR |= TIM2EN;
 	/*Set prescaler value*/
-	TIM2->PSC = 16000 - 1; // 16 000 000 / 16 000 = 1 000Hz
+	TIM2->PSC = TIM_PRESCALER - 1; // 16 000 000 / 16 000 = 1 000Hz
 	/*Set auto-reload value
 	 * This sets the motor frequency to 20kHz, which is a frequency at the edge of the
 	 * human hearing spectrum*/
-	TIM2->ARR = 20 - 1; // 1000Hz / 20 =  50Hz
+	pwm_set_frequency(ARR_PRESACLER, TIMER2);
 
 	/*Set output compare toggle mode*/
 	TIM2->CCMR1 |= OC1_PWM_MODE1;
 	/*Set duty cycle of PWM	to 50% of ARR value*/
-	TIM2->CCR1 = 50 - 1;
+	pwm_set_dutycycle(30, TIMER2); // Register unique to each channel
 	/*Enable tim2 ch1 in compare mode*/
 	TIM2->CCER |= CCER_CC1E;
 
@@ -115,14 +115,14 @@ void Tim2_Ch1_Init(void)
 	/*Set auto-reload value
 	 * By default, this sets the motor frequency to 20kHz, which is a frequency at the edge of the
 	 * human hearing spectrum*/
-	pwm_set_frequency(ARR_PRESACLER);
+	pwm_set_frequency(ARR_PRESACLER, TIMER2);
 
 	/*Set output compare toggle mode*/
 	TIM2->CCMR1 = OC1_PWM_MODE1; // Register unique to each channel
 
 	/*Set duty cycle of PWM	% of ARR value
 	 * By default, the duty cycle is set to 40% of the ARR_PRESCALER*/
-	pwm_set_dutycycle(DUTY_CYCLE, CHANNEL1); // Register unique to each channel
+	pwm_set_dutycycle(DUTY_CYCLE, TIMER2); // Register unique to each channel
 
 	/*Enable Timer 2 Channel 1 in compare mode*/
 	TIM2->CCER |= CCER_CC1E; // Register unique to each channel
@@ -133,69 +133,118 @@ void Tim2_Ch1_Init(void)
 	TIM2->CR1 |= CR1_CEN;
 }
 
-void Tim2_Ch2_Init(void)
+void Tim4_Ch1_Init(void)
 {
-	/*Enable clock access to GPIOA*/
-	RCC->AHB1ENR |= GPIOAEN;
+	/*Enable clock access to GPIOB*/
+	RCC->AHB1ENR |= GPIOBEN;
 
-	/*Set PA1 to alternate function mode*/
-	GPIOA->MODER &= ~(1U<<2);
-	GPIOA->MODER |= (1U<<3);
+	/*Set PB6 to alternate function mode*/
+	GPIOB->MODER &= ~(1U<<12);
+	GPIOB->MODER |= (1U<<13);
 
-	/*Configure the alternate function type to TIM2_CH1*/
-	GPIOA->AFR[0] |=  (1U<<4);
-	GPIOA->AFR[0] &= ~(1U<<5);
-	GPIOA->AFR[0] &= ~(1U<<6);
-	GPIOA->AFR[0] &= ~(1U<<7);
+	/*Configure the alternate function type to TIM4_CH1*/
+	GPIOB->AFR[0] &= ~(1U<<24);
+	GPIOB->AFR[0] |= (1U<<25);
+	GPIOB->AFR[0] &= ~(1U<<26);
+	GPIOB->AFR[0] &= ~(1U<<27);
 
-	/*Enable clock access to TIM2*/
-	RCC->APB1ENR |= TIM2EN;
+	/*Enable clock access to TIM4*/
+	RCC->APB1ENR |= TIM4EN;
 
 	/*Set prescaler value*/
-	TIM2->PSC = TIM_PRESCALER - 1; // 16 000 000 / 8 = 2 000 000Hz
+	TIM4->PSC = TIM_PRESCALER - 1; // 16 000 000 / 8 = 2 000 000Hz
 
 	/*Set auto-reload value
 	 * By default, this sets the motor frequency to 20kHz, which is a frequency at the edge of the
 	 * human hearing spectrum*/
-	pwm_set_frequency(ARR_PRESACLER);
+	pwm_set_frequency(ARR_PRESACLER, TIMER4);
 
 	/*Set output compare toggle mode*/
-	TIM2->CCMR1 = OC2_PWM_MODE1; // Register unique to each channel
+	TIM4->CCMR1 = OC1_PWM_MODE1; // Register unique to each channel
 
 	/*Set duty cycle of PWM	% of ARR value
 	 * By default, the duty cycle is set to 40% of the ARR_PRESCALER*/
-	pwm_set_dutycycle(DUTY_CYCLE, CHANNEL2); // Register unique to each channel
+	pwm_set_dutycycle(DUTY_CYCLE, TIMER4); // Register unique to each channel
 
-	/*Enable Timer 2 Channel 2 in compare mode*/
-	TIM2->CCER |= CCER_CC2E; // Register unique to each channel
+	/*Enable Timer 4 Channel 1 in compare mode*/
+	TIM4->CCER |= CCER_CC1E; // Register unique to each channel
 
 	/*Clear counter*/
-	TIM2->CNT = 0;
+	TIM4->CNT = 0;
 	/*Enable counter*/
-	TIM2->CR1 |= CR1_CEN;
+	TIM4->CR1 |= CR1_CEN;
 }
+//void Tim2_Ch2_Init(void)
+//{
+//	/*Enable clock access to GPIOA*/
+//	RCC->AHB1ENR |= GPIOAEN;
+//
+//	/*Set PA1 to alternate function mode*/
+//	GPIOA->MODER &= ~(1U<<2);
+//	GPIOA->MODER |= (1U<<3);
+//
+//	/*Configure the alternate function type to TIM2_CH1*/
+//	GPIOA->AFR[0] |=  (1U<<4);
+//	GPIOA->AFR[0] &= ~(1U<<5);
+//	GPIOA->AFR[0] &= ~(1U<<6);
+//	GPIOA->AFR[0] &= ~(1U<<7);
+//
+//	/*Enable clock access to TIM2*/
+//	RCC->APB1ENR |= TIM2EN;
+//
+//	/*Set prescaler value*/
+//	TIM2->PSC = TIM_PRESCALER - 1; // 16 000 000 / 8 = 2 000 000Hz
+//
+//	/*Set auto-reload value
+//	 * By default, this sets the motor frequency to 20kHz, which is a frequency at the edge of the
+//	 * human hearing spectrum*/
+//	pwm_set_frequency(ARR_PRESACLER);
+//
+//	/*Set output compare toggle mode*/
+//	TIM2->CCMR1 = OC2_PWM_MODE1; // Register unique to each channel
+//
+//	/*Set duty cycle of PWM	% of ARR value
+//	 * By default, the duty cycle is set to 40% of the ARR_PRESCALER*/
+//	pwm_set_dutycycle(DUTY_CYCLE, CHANNEL2); // Register unique to each channel
+//
+//	/*Enable Timer 2 Channel 2 in compare mode*/
+//	TIM2->CCER |= CCER_CC2E; // Register unique to each channel
+//
+//	/*Clear counter*/
+//	TIM2->CNT = 0;
+//	/*Enable counter*/
+//	TIM2->CR1 |= CR1_CEN;
+//}
 
 /*Frequency prescaler dividing down 2Mhz to a usable frequency range
  * 2 000 000 / Freq = Desired Frequency
  */
 
-void pwm_set_frequency(uint32_t Freq)
+void pwm_set_frequency(uint32_t Freq, uint32_t timer)
 {
-	TIM2->ARR = Freq - 1;
+	if (timer == 2)
+	{
+		TIM2->ARR = Freq - 1;
+	}
+	else if (timer == 4)
+	{
+		TIM4->ARR = Freq - 1;
+	}
+
 }
 
 /*Set the duty cycle of the PWM signal*/
-void pwm_set_dutycycle(uint32_t DutyCycle, uint32_t channel)
+void pwm_set_dutycycle(uint32_t DutyCycle, uint32_t timer)
 {
-	if (channel == 1)
+	if (timer == 2)
 	{
 		/*Set duty cycle of Timer 2 channel 1 PWM to % of ARR value*/
 		TIM2->CCR1 = DutyCycle - 1;
 	}
-	else if (channel == 2)
+	else if (timer == 4)
 	{
-		/*Set duty cycle of Timer 9 channel 1 PWM to % of ARR value*/
-		TIM2->CCR2 = DutyCycle - 1;
+		/*Set duty cycle of Timer 4 channel 1 PWM to % of ARR value*/
+		TIM4->CCR1 = DutyCycle - 1;
 	}
 }
 
@@ -238,7 +287,7 @@ void Encoder_A_Init(void)// Configuring Timer 4 channel 1 and 2 for encoder read
 	/*Enable clock access to GPIOB*/
 	RCC->AHB1ENR |= GPIOBEN;
 
-	/*Set PB6 and PB7 to alternate function mode*/
+	/*Set PB6 and PB7 to alternate function mode, CHANGE TO DIFFERENT PINS*/
 	GPIOD->MODER &= ~(1U<<12);
 	GPIOD->MODER |= (1U<<13);
 	GPIOD->MODER &= ~(1U<<14);
@@ -314,7 +363,7 @@ void Motor_A_Forward(uint32_t speed)
 	MotorPin_Init();
 	GPIOA->ODR |= IN1;
 	GPIOA->ODR &= ~IN2;
-	pwm_set_dutycycle(speed, CHANNEL1);
+	pwm_set_dutycycle(speed, TIMER2);
 //	Motor_A_Status();
 }
 void Motor_A_Reverse(uint32_t speed)
@@ -322,7 +371,7 @@ void Motor_A_Reverse(uint32_t speed)
 	MotorPin_Init();
 	GPIOA->ODR &= ~IN1;
 	GPIOA->ODR |= IN2;
-	pwm_set_dutycycle(speed, CHANNEL1);
+	pwm_set_dutycycle(speed, TIMER2);
 //	Motor_A_Status();
 }
 
@@ -331,7 +380,7 @@ void Motor_A_Brake(void)
 	MotorPin_Init();
 	GPIOA->ODR &= ~IN1;
 	GPIOA->ODR &= ~IN2;
-	Motor_A_Status();
+//	Motor_A_Status();
 }
 
 void Motor_A_Status(void)
@@ -362,8 +411,8 @@ void Motor_B_Forward(uint32_t speed)
 	MotorPin_Init();
 	GPIOA->ODR |= IN3;
 	GPIOA->ODR &= ~IN4;
-	pwm_set_dutycycle(speed, CHANNEL2);
-	Motor_B_Status();
+	pwm_set_dutycycle(speed, TIMER4);
+//	Motor_B_Status();
 }
 
 void Motor_B_Reverse(uint32_t speed)
@@ -371,7 +420,7 @@ void Motor_B_Reverse(uint32_t speed)
 	MotorPin_Init();
 	GPIOA->ODR &= ~IN3;
 	GPIOA->ODR |= IN4;
-	pwm_set_dutycycle(speed, CHANNEL2);
+	pwm_set_dutycycle(speed, TIMER4);
 //	Motor_B_Status();
 }
 void Motor_B_Brake(void)
@@ -379,7 +428,7 @@ void Motor_B_Brake(void)
 	MotorPin_Init();
 	GPIOA->ODR &= ~IN3;
 	GPIOA->ODR &= ~IN4;
-	Motor_B_Status();
+//	Motor_B_Status();
 }
 
 void Motor_B_Status(void)
