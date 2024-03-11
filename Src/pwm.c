@@ -1,5 +1,12 @@
 #include "stm32f4xx.h"
+#include "pwm.h"
 #include <stdio.h>
+
+#define SYSCFGEN		(1U<<14)
+#define EXTI8			((1U<<0) | (1U<<1) | (1U<<2) | (1U<<3))
+#define IMR_MR8			(1U<<8)
+#define RTSR_TR8		(1U<<8)
+#define FTSR_TR8		(1U<<8)
 
 
 #define TIM2EN			(1U<<0)
@@ -38,12 +45,18 @@
 #define IN3				(1U<<6)
 #define IN4				(1U<<7)
 
-
+long int Encoder_A_Pin8_Last = 0;
+long int counts = 0;
+uint8_t direction = 0;
 
 void pwm_set_frequency(uint32_t Freq, uint32_t timer);
 void pwm_set_dutycycle(uint32_t DutyCycle, uint32_t timer);
 void Motor_A_Status(void);
 void Motor_B_Status(void);
+static void exti8_callback(void);
+int get_Encoder_A_counts(void);
+void reset_Encoder_A_counts(void);
+
 
 /* Delay function  in milliseconds*/
 void Delay(uint32_t duration)
@@ -174,52 +187,10 @@ void Tim4_Ch1_Init(void)
 	/*Enable counter*/
 	TIM4->CR1 |= CR1_CEN;
 }
-//void Tim2_Ch2_Init(void)
-//{
-//	/*Enable clock access to GPIOA*/
-//	RCC->AHB1ENR |= GPIOAEN;
-//
-//	/*Set PA1 to alternate function mode*/
-//	GPIOA->MODER &= ~(1U<<2);
-//	GPIOA->MODER |= (1U<<3);
-//
-//	/*Configure the alternate function type to TIM2_CH1*/
-//	GPIOA->AFR[0] |=  (1U<<4);
-//	GPIOA->AFR[0] &= ~(1U<<5);
-//	GPIOA->AFR[0] &= ~(1U<<6);
-//	GPIOA->AFR[0] &= ~(1U<<7);
-//
-//	/*Enable clock access to TIM2*/
-//	RCC->APB1ENR |= TIM2EN;
-//
-//	/*Set prescaler value*/
-//	TIM2->PSC = TIM_PRESCALER - 1; // 16 000 000 / 8 = 2 000 000Hz
-//
-//	/*Set auto-reload value
-//	 * By default, this sets the motor frequency to 20kHz, which is a frequency at the edge of the
-//	 * human hearing spectrum*/
-//	pwm_set_frequency(ARR_PRESACLER);
-//
-//	/*Set output compare toggle mode*/
-//	TIM2->CCMR1 = OC2_PWM_MODE1; // Register unique to each channel
-//
-//	/*Set duty cycle of PWM	% of ARR value
-//	 * By default, the duty cycle is set to 40% of the ARR_PRESCALER*/
-//	pwm_set_dutycycle(DUTY_CYCLE, CHANNEL2); // Register unique to each channel
-//
-//	/*Enable Timer 2 Channel 2 in compare mode*/
-//	TIM2->CCER |= CCER_CC2E; // Register unique to each channel
-//
-//	/*Clear counter*/
-//	TIM2->CNT = 0;
-//	/*Enable counter*/
-//	TIM2->CR1 |= CR1_CEN;
-//}
 
 /*Frequency prescaler dividing down 2Mhz to a usable frequency range
  * 2 000 000 / Freq = Desired Frequency
  */
-
 void pwm_set_frequency(uint32_t Freq, uint32_t timer)
 {
 	if (timer == 2)
@@ -282,80 +253,6 @@ static void MotorPin_Init(void)
 	GPIOA->PUPDR |= (1U<<15);
 }
 
-void Encoder_A_Init(void)// Configuring Timer 4 channel 1 and 2 for encoder readings
-{
-	/*Enable clock access to GPIOB*/
-	RCC->AHB1ENR |= GPIOBEN;
-
-	/*Set PB6 and PB7 to alternate function mode, CHANGE TO DIFFERENT PINS*/
-	GPIOD->MODER &= ~(1U<<12);
-	GPIOD->MODER |= (1U<<13);
-	GPIOD->MODER &= ~(1U<<14);
-	GPIOD->MODER |= (1U<<15);
-
-	/*Configure the alternate function type to TIM4_CH1*/
-	GPIOD->AFR[0] &= ~(1U<<24);
-	GPIOD->AFR[0] |=  (1U<<25);
-	GPIOD->AFR[0] &= ~(1U<<26);
-	GPIOD->AFR[0] &= ~(1U<<27);
-
-	/*Configure the alternate function type to TIM4_CH2*/
-	GPIOD->AFR[0] &= ~(1U<<28);
-	GPIOD->AFR[0] |=  (1U<<29);
-	GPIOD->AFR[0] &= ~(1U<<30);
-	GPIOD->AFR[0] &= ~(1U<<31);
-
-	/*Enable clock access to TIM4*/
-	RCC->APB1ENR |= TIM4EN;
-
-	/*Set auto-reload value*/
-	TIM4->ARR = ARR_MAX;
-
-	/*Setting Encoder mode*/
-	TIM4->SMCR |= SMS_ENC_MODE3;
-//	TIM4->SMCR &= ~(1U<<1);
-//	TIM4->SMCR &= ~(1U<<2);
-
-	/*Set timer channels in capture (input) mode*/
-	// Channel 1 is mapped on TI1
-	TIM4->CCMR1 &= ~(1U<<0);
-	TIM4->CCMR1 |= (1U<<1);
-	// Channel 2 is mapped on TI2
-	TIM4->CCMR1 &= ~(1U<<8);
-	TIM4->CCMR1 |= (1U<<9);
-
-	/*Setting the Encoder polarity*/
-	// Channel 1
-	TIM4->CCER &= ~CCER_CC1P;
-	TIM4->CCER &= ~CCER_CC1NP;
-	// Channel 2
-	TIM4->CCER &= ~CCER_CC2P;
-	TIM4->CCER &= ~CCER_CC2NP;
-
-	/*Setting the Encoder filter*/
-	// Channel 1
-	TIM4->CCMR1 &= ~(1U<<4);
-	TIM4->CCMR1 &= ~(1U<<5);
-	TIM4->CCMR1 &= ~(1U<<6);
-	TIM4->CCMR1 &= ~(1U<<7);
-	// Channel 2
-	TIM4->CCMR1 &= ~(1U<<12);
-	TIM4->CCMR1 &= ~(1U<<13);
-	TIM4->CCMR1 &= ~(1U<<14);
-	TIM4->CCMR1 &= ~(1U<<15);
-
-
-	/*Enable Timer 4 Channel 1 in capture mode*/
-	TIM4->CCER |= CCER_CC1E; // Register unique to each channel
-	/*Enable Timer 4 Channel 2 in capture mode*/
-	TIM4->CCER |= CCER_CC2E; // Register unique to each channel
-
-	/*Clear counter*/
-//	TIM4->CNT = 0;
-
-	/*Enable counter*/
-	TIM4->CR1 |= CR1_CEN;
-}
 
 /* NOTE: Have to add deadtime delay to prevent shoothrough*/
 void Motor_A_Forward(uint32_t speed)
@@ -452,3 +349,213 @@ void Motor_B_Status(void)
 		printf("IN4 ON...\n\r");
 	}
 }
+
+void Encoder_A_Init(void)
+{
+	/*Disable global interrupts*/
+	__disable_irq();
+
+	/*Enable clock access to GPIOA*/
+	RCC->AHB1ENR |= GPIOAEN;
+
+	/*Set PA8 to input mode*/
+	GPIOA->MODER &= ~(1U<<16);
+	GPIOA->MODER &= ~(1U<<17);
+	/*Set PA8 to no pull mode*/
+	GPIOA->PUPDR &= ~(1U<<16);
+	GPIOA->PUPDR &= ~(1U<<17);
+
+	/*Set PA9 to input mode*/
+	GPIOA->MODER &= ~(1U<<18);
+	GPIOA->MODER &=	~(1U<<19);
+	/*Set PA9 to no pull mode*/
+	GPIOA->PUPDR &= ~(1U<<18);
+	GPIOA->PUPDR &= ~(1U<<19);
+
+
+	/*Enable clock access to SYSCFG*/
+	RCC->APB2ENR |= SYSCFGEN;
+
+	/*Select PORTA on EXTI8*/
+	SYSCFG->EXTICR[2] &= ~EXTI8; //EXTICR[3:0] chooses from the four configuration registers
+
+	/*Unmask EXTI8*/
+	EXTI->IMR |= IMR_MR8;
+	/*Select rising edge trigger*/
+	EXTI->RTSR |= RTSR_TR8;
+	/*Select falling edge trigger*/
+	EXTI->FTSR |= FTSR_TR8;
+
+	/*Set priority of EXTI8 in NVIC*/
+	NVIC_SetPriority(EXTI9_5_IRQn, 0);
+	/*Enable EXTI8 line in NVIC*/
+	NVIC_EnableIRQ(EXTI9_5_IRQn); //EXTI9_5_IRQn selects external Line[9:5] interrupts
+
+	/*Enable global interrupts*/
+	__enable_irq();
+
+}
+
+static void exti8_callback(void)
+{
+	long int last_state = GPIOA->IDR & Encoder_A_Pin8;
+	if ((Encoder_A_Pin8_Last == GPIO_PIN_RESET) && (last_state == GPIO_PIN_SET))
+	{
+		long int val = GPIOA->IDR & Encoder_A_Pin9;
+		if ((val == GPIO_PIN_RESET) && direction)
+		{
+			direction = 0; // Reverse
+		}
+		else if ((val == GPIO_PIN_SET) && (direction == 0))
+		{
+			direction = 1; // Forward
+		}
+	}
+	Encoder_A_Pin8_Last = last_state;
+
+	if (!direction)
+		counts++;
+	else
+		counts--;
+}
+
+void EXTI9_5_IRQHandler(void)
+{
+	if((EXTI->PR & Encoder_A_Pin8)!=0) //If Pending register on Line 8 is triggered
+	{
+		/*Clear PR flag*/
+		EXTI->PR |= Encoder_A_Pin8;
+
+		exti8_callback();
+	}
+
+}
+
+int get_Encoder_A_counts(void)
+{
+	return counts;
+}
+
+void reset_Encoder_A_counts(void)
+{
+	counts = 0;
+}
+
+/***ARCHIVE***/
+
+//void Tim2_Ch2_Init(void)
+//{
+//	/*Enable clock access to GPIOA*/
+//	RCC->AHB1ENR |= GPIOAEN;
+//
+//	/*Set PA1 to alternate function mode*/
+//	GPIOA->MODER &= ~(1U<<2);
+//	GPIOA->MODER |= (1U<<3);
+//
+//	/*Configure the alternate function type to TIM2_CH1*/
+//	GPIOA->AFR[0] |=  (1U<<4);
+//	GPIOA->AFR[0] &= ~(1U<<5);
+//	GPIOA->AFR[0] &= ~(1U<<6);
+//	GPIOA->AFR[0] &= ~(1U<<7);
+//
+//	/*Enable clock access to TIM2*/
+//	RCC->APB1ENR |= TIM2EN;
+//
+//	/*Set prescaler value*/
+//	TIM2->PSC = TIM_PRESCALER - 1; // 16 000 000 / 8 = 2 000 000Hz
+//
+//	/*Set auto-reload value
+//	 * By default, this sets the motor frequency to 20kHz, which is a frequency at the edge of the
+//	 * human hearing spectrum*/
+//	pwm_set_frequency(ARR_PRESACLER);
+//
+//	/*Set output compare toggle mode*/
+//	TIM2->CCMR1 = OC2_PWM_MODE1; // Register unique to each channel
+//
+//	/*Set duty cycle of PWM	% of ARR value
+//	 * By default, the duty cycle is set to 40% of the ARR_PRESCALER*/
+//	pwm_set_dutycycle(DUTY_CYCLE, CHANNEL2); // Register unique to each channel
+//
+//	/*Enable Timer 2 Channel 2 in compare mode*/
+//	TIM2->CCER |= CCER_CC2E; // Register unique to each channel
+//
+//	/*Clear counter*/
+//	TIM2->CNT = 0;
+//	/*Enable counter*/
+//	TIM2->CR1 |= CR1_CEN;
+//}
+
+//void Encoder_A_Init(void)// Configuring Timer 4 channel 1 and 2 for encoder readings
+//{
+//	/*Enable clock access to GPIOB*/
+//	RCC->AHB1ENR |= GPIOBEN;
+//
+//	/*Set PB6 and PB7 to alternate function mode, CHANGE TO DIFFERENT PINS*/
+//	GPIOD->MODER &= ~(1U<<12);
+//	GPIOD->MODER |= (1U<<13);
+//	GPIOD->MODER &= ~(1U<<14);
+//	GPIOD->MODER |= (1U<<15);
+//
+//	/*Configure the alternate function type to TIM4_CH1*/
+//	GPIOD->AFR[0] &= ~(1U<<24);
+//	GPIOD->AFR[0] |=  (1U<<25);
+//	GPIOD->AFR[0] &= ~(1U<<26);
+//	GPIOD->AFR[0] &= ~(1U<<27);
+//
+//	/*Configure the alternate function type to TIM4_CH2*/
+//	GPIOD->AFR[0] &= ~(1U<<28);
+//	GPIOD->AFR[0] |=  (1U<<29);
+//	GPIOD->AFR[0] &= ~(1U<<30);
+//	GPIOD->AFR[0] &= ~(1U<<31);
+//
+//	/*Enable clock access to TIM4*/
+//	RCC->APB1ENR |= TIM4EN;
+//
+//	/*Set auto-reload value*/
+//	TIM4->ARR = ARR_MAX;
+//
+//	/*Setting Encoder mode*/
+//	TIM4->SMCR |= SMS_ENC_MODE3;
+////	TIM4->SMCR &= ~(1U<<1);
+////	TIM4->SMCR &= ~(1U<<2);
+//
+//	/*Set timer channels in capture (input) mode*/
+//	// Channel 1 is mapped on TI1
+//	TIM4->CCMR1 &= ~(1U<<0);
+//	TIM4->CCMR1 |= (1U<<1);
+//	// Channel 2 is mapped on TI2
+//	TIM4->CCMR1 &= ~(1U<<8);
+//	TIM4->CCMR1 |= (1U<<9);
+//
+//	/*Setting the Encoder polarity*/
+//	// Channel 1
+//	TIM4->CCER &= ~CCER_CC1P;
+//	TIM4->CCER &= ~CCER_CC1NP;
+//	// Channel 2
+//	TIM4->CCER &= ~CCER_CC2P;
+//	TIM4->CCER &= ~CCER_CC2NP;
+//
+//	/*Setting the Encoder filter*/
+//	// Channel 1
+//	TIM4->CCMR1 &= ~(1U<<4);
+//	TIM4->CCMR1 &= ~(1U<<5);
+//	TIM4->CCMR1 &= ~(1U<<6);
+//	TIM4->CCMR1 &= ~(1U<<7);
+//	// Channel 2
+//	TIM4->CCMR1 &= ~(1U<<12);
+//	TIM4->CCMR1 &= ~(1U<<13);
+//	TIM4->CCMR1 &= ~(1U<<14);
+//	TIM4->CCMR1 &= ~(1U<<15);
+//
+//
+//	/*Enable Timer 4 Channel 1 in capture mode*/
+//	TIM4->CCER |= CCER_CC1E; // Register unique to each channel
+//	/*Enable Timer 4 Channel 2 in capture mode*/
+//	TIM4->CCER |= CCER_CC2E; // Register unique to each channel
+//
+//	/*Clear counter*/
+////	TIM4->CNT = 0;
+//
+//	/*Enable counter*/
+//	TIM4->CR1 |= CR1_CEN;
+//}

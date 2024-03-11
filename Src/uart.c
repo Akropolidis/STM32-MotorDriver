@@ -13,6 +13,7 @@
 #define APB1_CLK		SYS_FREQ
 
 #define UART_BAUDRATE	115200
+//#define UART_BAUDRATE	57600
 
 static void uart_set_baudrate(USART_TypeDef *USARTx, uint32_t PeriphClk,  uint32_t BaudRate);
 static uint16_t compute_uart_bd(uint32_t PeriphClk, uint32_t BaudRate);
@@ -102,7 +103,7 @@ void uart2_tx_init(void)
 
 char uart2_read(void)
 {
-	  /*Make sure the receive data register is not empty*/
+	/*Make sure the receive data register is not empty*/
 	while(!(USART2->SR & SR_RXNE)){}
 
 	/*Read data*/
