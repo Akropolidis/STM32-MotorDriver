@@ -1,5 +1,5 @@
 "./Src/main.o"
-"./Src/pwm.o"
+"./Src/motor_driver.o"
 "./Src/syscalls.o"
 "./Src/sysmem.o"
 "./Src/uart.o"

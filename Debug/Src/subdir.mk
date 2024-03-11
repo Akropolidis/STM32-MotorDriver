@@ -6,21 +6,21 @@
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
 ../Src/main.c \
-../Src/pwm.c \
+../Src/motor_driver.c \
 ../Src/syscalls.c \
 ../Src/sysmem.c \
 ../Src/uart.c 
 
 OBJS += \
 ./Src/main.o \
-./Src/pwm.o \
+./Src/motor_driver.o \
 ./Src/syscalls.o \
 ./Src/sysmem.o \
 ./Src/uart.o 
 
 C_DEPS += \
 ./Src/main.d \
-./Src/pwm.d \
+./Src/motor_driver.d \
 ./Src/syscalls.d \
 ./Src/sysmem.d \
 ./Src/uart.d 
@@ -28,12 +28,12 @@ C_DEPS += \
 
 # Each subdirectory must supply rules for building sources it contributes
 Src/%.o Src/%.su Src/%.cyclo: ../Src/%.c Src/subdir.mk
-	arm-none-eabi-gcc "$<" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DNUCLEO_F401RE -DSTM32 -DSTM32F401RETx -DSTM32F4 -DSTM32F401xE -c -I../Inc -I"C:/Users/adeya/OneDrive/Documents/STM32F4-Baremetal_Workspace/pwm/Drivers/CMSIS/Device/ST/STM32F4xx/Include" -I"C:/Users/adeya/OneDrive/Documents/STM32F4-Baremetal_Workspace/pwm/Drivers/CMSIS/Include" -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"$(@:%.o=%.d)" -MT"$@" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "$@"
+	arm-none-eabi-gcc "$<" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DNUCLEO_F401RE -DSTM32 -DSTM32F401RETx -DSTM32F4 -DSTM32F401xE -c -I../Inc -I"C:/Users/adeya/OneDrive/Documents/STM32F4-Baremetal_Workspace/MotorDriver/Drivers/CMSIS/Device/ST/STM32F4xx/Include" -I"C:/Users/adeya/OneDrive/Documents/STM32F4-Baremetal_Workspace/MotorDriver/Drivers/CMSIS/Include" -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"$(@:%.o=%.d)" -MT"$@" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "$@"
 
 clean: clean-Src
 
 clean-Src:
-	-$(RM) ./Src/main.cyclo ./Src/main.d ./Src/main.o ./Src/main.su ./Src/pwm.cyclo ./Src/pwm.d ./Src/pwm.o ./Src/pwm.su ./Src/syscalls.cyclo ./Src/syscalls.d ./Src/syscalls.o ./Src/syscalls.su ./Src/sysmem.cyclo ./Src/sysmem.d ./Src/sysmem.o ./Src/sysmem.su ./Src/uart.cyclo ./Src/uart.d ./Src/uart.o ./Src/uart.su
+	-$(RM) ./Src/main.cyclo ./Src/main.d ./Src/main.o ./Src/main.su ./Src/motor_driver.cyclo ./Src/motor_driver.d ./Src/motor_driver.o ./Src/motor_driver.su ./Src/syscalls.cyclo ./Src/syscalls.d ./Src/syscalls.o ./Src/syscalls.su ./Src/sysmem.cyclo ./Src/sysmem.d ./Src/sysmem.o ./Src/sysmem.su ./Src/uart.cyclo ./Src/uart.d ./Src/uart.o ./Src/uart.su
 
 .PHONY: clean-Src
 

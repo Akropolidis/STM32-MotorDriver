@@ -1,5 +1,5 @@
-#ifndef PWM_H_
-#define PWM_H_
+#ifndef MOTOR_DRIVER_H_
+#define MOTOR_DRIVER_H_
 
 #ifdef __cplusplus
 extern "C" {
@@ -50,4 +50,4 @@ void Motors_Forward(uint32_t speed);
 }
 #endif
 
-#endif /* PWM_H_ */
+#endif /* MOTOR_DRIVER_H_ */

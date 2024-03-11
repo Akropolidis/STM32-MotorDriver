@@ -1,4 +1,4 @@
-Src/main.o: ../Src/main.c \
+Src/motor_driver.o: ../Src/motor_driver.c \
  C:/Users/adeya/OneDrive/Documents/STM32F4-Baremetal_Workspace/MotorDriver/Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f4xx.h \
  C:/Users/adeya/OneDrive/Documents/STM32F4-Baremetal_Workspace/MotorDriver/Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f401xe.h \
  C:/Users/adeya/OneDrive/Documents/STM32F4-Baremetal_Workspace/MotorDriver/Drivers/CMSIS/Include/core_cm4.h \
