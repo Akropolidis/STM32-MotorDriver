@@ -11,6 +11,9 @@ extern "C" {
 
 #define Encoder_A_Pin8		(1U<<8)
 #define Encoder_A_Pin9		(1U<<9)
+#define Encoder_B_Pin10		(1U<<10)
+#define Encoder_B_Pin11		(1U<<11)
+
 #define GPIO_PIN_RESET		0
 #define GPIO_PIN_SET		32
 
@@ -18,7 +21,6 @@ void tim2_pa5_pwm(void);
 void Delay(uint32_t duration);
 
 void Tim2_Ch1_Init(void); //32-bit resolution
-void Tim2_Ch2_Init(void);
 void Tim4_Ch1_Init(void);
 
 void pwm_set_frequency(uint32_t Freq, uint32_t timer);
@@ -29,6 +31,7 @@ void Encoder_A_Init(void); //Initializing encoder on Motor A
 void EXTI9_5_IRQHandler(void);
 int get_Encoder_A_counts(void);
 void reset_Encoder_A_counts(void);
+int Motor_A_Dist_mm(uint16_t diameter);
 
 void Motor_A_Forward(uint32_t speed);
 void Motor_A_Reverse(uint32_t speed);
@@ -36,6 +39,13 @@ void Motor_A_Brake(void); // This is a soft break from the motor controller
 void Motor_A_Status(void);
 
 /** Motor B Functions **/
+void Encoder_B_Init(void); //Initializing encoder on Motor B
+void EXTI15_10_IRQHandler(void);
+int get_Encoder_B_counts(void);
+void reset_Encoder_B_counts(void);
+int Motor_B_Dist_mm(uint16_t diameter);
+
+
 void Motor_B_Forward(uint32_t speed);
 void Motor_B_Reverse(uint32_t speed);
 void Motor_B_Brake(void); // Make soft break
