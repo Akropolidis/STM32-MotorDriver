@@ -21,7 +21,9 @@ void tim2_pa5_pwm(void);
 void Delay(uint32_t duration);
 
 void Tim2_Ch1_Init(void); //32-bit resolution
+void Tim5_Ch2_Init(void);
 void Tim4_Ch1_Init(void);
+void Tim1_Ch1_Init(void);
 
 void pwm_set_frequency(uint32_t Freq, uint32_t timer);
 void pwm_set_dutycycle(uint32_t DutyCycle, uint32_t timer);
@@ -51,10 +53,12 @@ void Motor_B_Reverse(uint32_t speed);
 void Motor_B_Brake(void); // Make soft break
 void Motor_B_Status(void);
 
-void Motors_Forward(uint32_t speed);
+void set_Servo_pwm(uint8_t duty_cycle);
+void set_servo_angle(uint8_t angle);
 
 // ARCHIVE
-//void Tim2_Ch2_Init(void);
+//void Encoder_A_Init(void);
+
 
 #ifdef __cplusplus
 }

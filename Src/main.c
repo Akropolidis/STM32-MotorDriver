@@ -5,19 +5,41 @@
 
 int main(void)
 {
-	uart2_rxtx_init();
+//	uart2_rxtx_init();
+//	tim2_pa5_pwm();
 //	Tim2_Ch1_Init();
-//	Tim4_Ch1_Init();
+	Tim5_Ch2_Init();
+//	set_Servo_pos90deg();
+//	set_Servo_neg90deg();
 
-	Encoder_B_Init();
-	reset_Encoder_B_counts();
-//	Motor_A_Forward(50);
-	while(1)
-	{
-//		int pulses = get_Encoder_B_counts();
-//		printf("Pulses: %d\n\n\r", pulses);
-		int distance = Motor_B_Dist_mm(MOTORDIAMETER);
-		printf("Distance: %d mm\n\n\r", distance);
+	for (int i = 0; i < 1000000; i++){}
+	set_servo_angle(20);
+	for (int i = 0; i < 1000000; i++){}
+	set_servo_angle(40);
+	for (int i = 0; i < 1000000; i++){}
+	set_servo_angle(60);
+	for (int i = 0; i < 1000000; i++){}
+	set_servo_angle(80);
+	for (int i = 0; i < 1000000; i++){}
+	set_servo_angle(100);
+	for (int i = 0; i < 1000000; i++){}
+	set_servo_angle(120);
+	for (int i = 0; i < 1000000; i++){}
+	set_servo_angle(140);
+	for (int i = 0; i < 1000000; i++){}
+	set_servo_angle(160);
+	for (int i = 0; i < 1000000; i++){}
+	set_servo_angle(180);
 
-	}
+//	while(1)
+//	{
+//		for (int i = 0; i <= 18; i++)
+//		{
+//			for (int j = 0; j < 1000000; j++){}
+//			set_servo_angle(i * 10);
+//			// for (int i = 0; i < 1000000; i++){}
+//		}
+//		// int distance = Motor_B_Dist_mm(MOTORDIAMETER);
+//		// printf("Distance: %d mm\n\n\r", distance);
+//	 }
 }
