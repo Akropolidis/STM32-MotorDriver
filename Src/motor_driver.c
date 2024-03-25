@@ -42,7 +42,7 @@
 #define ARR_MAX			65535
 #define DUTY_CYCLE		40
 #define OFF				0
-#define PPR				1920 // Encoder pulses per full revolution
+#define PPR				280 // Encoder pulses per full revolution
 #define PI				3.1415
 
 #define TIMER2			2
@@ -79,7 +79,7 @@ void reset_Encoder_B_counts(void);
 /* Delay function  in milliseconds*/
 void Delay(uint32_t duration)
 {
-	duration = duration * 1000;
+	duration = duration * 1345;
 	for (int i = 0; i < duration; i++){}
 }
 
