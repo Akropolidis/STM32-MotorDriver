@@ -8,6 +8,8 @@ extern "C" {
 #include <stdint.h>
 #include <stdio.h>
 #include "uart.h"
+#include "stm32f4xx.h"
+
 
 #define Encoder_A_Pin8		(1U<<8)
 #define Encoder_A_Pin9		(1U<<9)

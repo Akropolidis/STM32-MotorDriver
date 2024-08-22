@@ -1,6 +1,4 @@
-#include "stm32f4xx.h"
 #include "motor_driver.h"
-#include <stdio.h>
 
 #define SYSCFGEN		(1U<<14)
 
